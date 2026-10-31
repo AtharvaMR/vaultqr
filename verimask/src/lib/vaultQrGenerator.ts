@@ -6,7 +6,46 @@ const VAULT_MASTER_SECRET = new TextEncoder().encode(
   process.env.VAULT_MASTER_SECRET || 'hackathon-super-secret-key-32bytes'
 );
 
-export const LOCAL_LAN_IP = '10.188.235.154';
+export function getLocalLanIp(): string {
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return window.location.hostname;
+  }
+  if (process.env.NEXT_PUBLIC_LAN_IP) {
+    return process.env.NEXT_PUBLIC_LAN_IP;
+  }
+  try {
+    // Dynamic require so browser bundles never fail
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const os = require('os');
+    const ifaces = os.networkInterfaces();
+    let candidate = '';
+    for (const dev in ifaces) {
+      const detailsList = ifaces[dev];
+      if (!detailsList) continue;
+      for (const details of detailsList) {
+        if (details.family === 'IPv4' && !details.internal) {
+          if (
+            details.address.startsWith('10.') ||
+            details.address.startsWith('192.168.') ||
+            details.address.startsWith('172.')
+          ) {
+            const lowerName = dev.toLowerCase();
+            if (lowerName.includes('wi-fi') || lowerName.includes('wlan') || lowerName.includes('wireless')) {
+              return details.address;
+            }
+            if (!candidate) candidate = details.address;
+          }
+        }
+      }
+    }
+    if (candidate) return candidate;
+  } catch {
+    // Fallback if OS API fails
+  }
+  return '10.139.224.154';
+}
+
+export const LOCAL_LAN_IP = getLocalLanIp();
 export const DEFAULT_PORT = '3050';
 
 export function getEffectiveAppUrl(hostPreference?: 'network' | 'localhost' | string): string {
@@ -17,7 +56,8 @@ export function getEffectiveAppUrl(hostPreference?: 'network' | 'localhost' | st
     return hostPreference;
   }
   // Default to LAN IP so physical mobile phones and Google Lens can reach the server over Wi-Fi
-  return `http://${LOCAL_LAN_IP}:${DEFAULT_PORT}`;
+  const activeIp = getLocalLanIp();
+  return `http://${activeIp}:${DEFAULT_PORT}`;
 }
 
 export interface ShareSessionPayload {

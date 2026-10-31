@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": "./",
+    "module": "commonjs",
+    "target": "es5",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "declaration": true,
+    "preserveConstEnums": false,
+    "downlevelIteration": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}

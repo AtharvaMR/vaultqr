@@ -1,0 +1,4 @@
+﻿
+.env*
+verimask/.env*
+*.pem
